@@ -1,16 +1,15 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>PRH Audiobook Requests</title>
   <style>
     :root{
-      --accent-1: #745864;
-      --accent-2: #8a9588;
-      --accent-3: #dcb2b1;
+      --accent-1:#745864;
+      --accent-2:#8a9588;
+      --accent-3:#dcb2b1;
 
-      --bg: transparent;
       --surface: rgba(255,255,255,0.78);
       --surface-2: rgba(255,255,255,0.55);
       --border: rgba(15,15,15,0.12);
@@ -29,127 +28,90 @@
         --shadow: 0 12px 34px rgba(0,0,0,0.35);
       }
     }
-    html[data-theme="light"]{
-      --surface: rgba(255,255,255,0.78);
-      --surface-2: rgba(255,255,255,0.55);
-      --border: rgba(15,15,15,0.12);
-      --text: rgba(15,15,15,0.90);
-      --muted: rgba(15,15,15,0.62);
-      --shadow: 0 10px 30px rgba(0,0,0,0.08);
-    }
-    html[data-theme="dark"]{
-      --surface: rgba(20,20,20,0.70);
-      --surface-2: rgba(20,20,20,0.45);
-      --border: rgba(255,255,255,0.12);
-      --text: rgba(255,255,255,0.92);
-      --muted: rgba(255,255,255,0.62);
-      --shadow: 0 12px 34px rgba(0,0,0,0.35);
-    }
-
-    * { box-sizing: border-box; }
+    *{ box-sizing:border-box; }
     body{
-      margin: 0;
-      padding: 12px;
-      background: var(--bg);
+      margin:0; padding:12px;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial;
-      color: var(--text);
+      color:var(--text);
+      background:transparent;
     }
     .card{
-      width: min(560px, 100%);
-      margin: 0 auto;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      background: linear-gradient(180deg, var(--surface), var(--surface-2));
-      box-shadow: var(--shadow);
-      overflow: hidden;
+      width:min(560px,100%);
+      margin:0 auto;
+      border-radius:var(--radius);
+      border:1px solid var(--border);
+      background:linear-gradient(180deg,var(--surface),var(--surface-2));
+      box-shadow:var(--shadow);
+      overflow:hidden;
     }
     .topbar{
-      padding: 14px 16px 10px 16px;
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 12px;
+      padding:14px 16px 10px 16px;
+      display:flex;
+      align-items:baseline;
+      justify-content:space-between;
+      gap:12px;
     }
-    .title{ font-size: 14px; font-weight: 650; letter-spacing: 0.2px; }
-    .sub{ font-size: 12px; color: var(--muted); white-space: nowrap; }
-    .body{ padding: 10px 16px 16px 16px; display: grid; gap: 12px; }
+    .title{ font-size:14px; font-weight:650; letter-spacing:.2px; }
+    .sub{ font-size:12px; color:var(--muted); white-space:nowrap; }
+    .body{ padding:10px 16px 16px 16px; display:grid; gap:12px; }
     .meterRow{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
     .count{
-      font-size: 44px;
-      font-weight: 750;
-      line-height: 1;
-      letter-spacing: -0.5px;
-      background: linear-gradient(90deg, var(--accent-1), var(--accent-3));
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      user-select: none;
+      font-size:44px; font-weight:750; line-height:1; letter-spacing:-.5px;
+      background:linear-gradient(90deg,var(--accent-1),var(--accent-3));
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+      user-select:none;
     }
     .labelCol{ display:grid; gap:4px; justify-items:end; text-align:right; }
-    .label{ font-size: 12px; color: var(--muted); }
+    .label{ font-size:12px; color:var(--muted); }
     .progressWrap{
-      height: 10px;
-      border-radius: 999px;
-      background: rgba(127,127,127,0.18);
-      overflow: hidden;
-      border: 1px solid var(--border);
+      height:10px; border-radius:999px;
+      background:rgba(127,127,127,0.18);
+      overflow:hidden; border:1px solid var(--border);
     }
     .progress{
-      height: 100%;
-      width: 100%;
-      border-radius: 999px;
-      background: linear-gradient(90deg, var(--accent-2), var(--accent-3), var(--accent-1));
-      transform-origin: left;
-      transform: scaleX(1);
-      transition: transform 180ms ease;
+      height:100%;
+      width:100%;
+      border-radius:999px;
+      background:linear-gradient(90deg,var(--accent-2),var(--accent-3),var(--accent-1));
+      transform-origin:left;
+      transform:scaleX(1);
+      transition:transform 180ms ease;
     }
     .buttons{ display:flex; gap:10px; flex-wrap:wrap; }
     button{
-      appearance: none;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 10px 12px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text);
-      background: rgba(127,127,127,0.10);
-      cursor: pointer;
-      transition: transform 80ms ease, background 120ms ease, border-color 120ms ease, opacity 120ms ease;
+      appearance:none;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px 12px;
+      font-size:13px;
+      font-weight:600;
+      color:var(--text);
+      background:rgba(127,127,127,0.10);
+      cursor:pointer;
+      transition:transform 80ms ease, background 120ms ease, border-color 120ms ease, opacity 120ms ease;
     }
-    button:hover{ background: rgba(127,127,127,0.14); }
-    button:active{ transform: translateY(1px); }
+    button:hover{ background:rgba(127,127,127,0.14); }
+    button:active{ transform:translateY(1px); }
     .primary{
       border-color: rgba(220,178,177,0.55);
       background: linear-gradient(180deg, rgba(220,178,177,0.28), rgba(116,88,100,0.18));
     }
-    .primary:hover{
-      border-color: rgba(220,178,177,0.75);
-      background: linear-gradient(180deg, rgba(220,178,177,0.33), rgba(116,88,100,0.22));
-    }
-    button:disabled{ cursor:not-allowed; opacity:0.55; }
-
+    button:disabled{ cursor:not-allowed; opacity:.55; }
     .footer{
-      padding: 0 16px 14px 16px;
-      font-size: 12px;
-      color: var(--muted);
-      display:flex;
-      justify-content: space-between;
-      gap:10px;
-      flex-wrap: wrap;
+      padding:0 16px 14px 16px;
+      font-size:12px; color:var(--muted);
+      display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;
     }
     .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      padding:6px 10px;
-      border-radius:999px;
+      display:inline-flex; align-items:center; gap:6px;
+      padding:6px 10px; border-radius:999px;
       border:1px solid var(--border);
-      background: rgba(127,127,127,0.10);
+      background:rgba(127,127,127,0.10);
     }
     .dot{
       width:8px; height:8px; border-radius:999px;
-      background: var(--accent-2);
-      box-shadow: 0 0 0 3px rgba(138,149,136,0.18);
+      background:var(--accent-2);
+      box-shadow:0 0 0 3px rgba(138,149,136,0.18);
     }
   </style>
 </head>
@@ -181,74 +143,16 @@
     </div>
 
     <div class="footer">
-      <span class="pill"><span class="dot"></span><span id="resetInfo">Auto-resets on the 1st</span></span>
-      <span class="pill" id="statusPill">Syncing…</span>
+      <span class="pill"><span class="dot"></span><span>Auto-resets on the 1st</span></span>
+      <span class="pill" id="statusPill">Loading…</span>
     </div>
   </div>
 
-<script>
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzYZDv1OdLtiBqy1wWgMT-_jukj8o7I-mdM6Vmhzz9QHxWiCVBROJ-00OGWRTEWx25zag/exec";
-  const API_TOKEN = "prh_9f2c4a7b_2026".trim();
+  <script>
+    // Your Apps Script Web App endpoint + token
+    const API_BASE = "https://script.google.com/macros/s/AKfycbx767nvycjU-PhrJCYWzuIUZh1vZVPLctvmduZBCzILjGv-qN-Gxnf4iUkPWsEMH2nQkQ/exec";
+    const API_TOKEN = "prh_a1b2c3_2026";
 
-  // Optional theme override: ?theme=dark or ?theme=light
-  (function themeOverride() {
-    const params = new URLSearchParams(window.location.search);
-    const theme = params.get("theme");
-    if (theme === "dark" || theme === "light") {
-      document.documentElement.setAttribute("data-theme", theme);
-    }
-  })();
-
-  function jsonp(action, timeoutMs = 8000) {
-    return new Promise((resolve, reject) => {
-      const cbName = `cb_${Date.now()}_${Math.floor(Math.random() * 1e6)}`;
-
-      const url = new URL(WEB_APP_URL);
-      url.searchParams.set("token", (API_TOKEN || "").trim());
-      url.searchParams.set("action", action);
-      url.searchParams.set("callback", cbName);
-      url.searchParams.set("_ts", String(Date.now())); // cache buster
-
-      let done = false;
-      let script = null;
-
-      function cleanup() {
-        try { delete window[cbName]; } catch {}
-        if (script && script.parentNode) script.parentNode.removeChild(script);
-      }
-
-      const timer = setTimeout(() => {
-        if (done) return;
-        done = true;
-        cleanup();
-        reject(new Error("JSONP timeout"));
-      }, timeoutMs);
-
-      window[cbName] = (data) => {
-        if (done) return;
-        done = true;
-        clearTimeout(timer);
-        cleanup();
-        resolve(data);
-      };
-
-      script = document.createElement("script");
-      script.src = url.toString();
-      script.async = true;
-      script.onerror = () => {
-        if (done) return;
-        done = true;
-        clearTimeout(timer);
-        cleanup();
-        reject(new Error("JSONP load error"));
-      };
-
-      document.body.appendChild(script);
-    });
-  }
-
-  document.addEventListener("DOMContentLoaded", () => {
-    // DOM refs
     const countEl = document.getElementById("count");
     const usedEl = document.getElementById("usedLabel");
     const progressEl = document.getElementById("progressBar");
@@ -259,132 +163,97 @@
     const undoBtn = document.getElementById("undoBtn");
     const resetBtn = document.getElementById("resetBtn");
 
-    // Validate markup
-    const missing = [];
-    if (!countEl) missing.push("count");
-    if (!usedEl) missing.push("usedLabel");
-    if (!progressEl) missing.push("progressBar");
-    if (!monthEl) missing.push("monthLabel");
-    if (!statusPill) missing.push("statusPill");
-    if (!useBtn) missing.push("useBtn");
-    if (!undoBtn) missing.push("undoBtn");
-    if (!resetBtn) missing.push("resetBtn");
+    let max = 15, remaining = 15, month = "";
 
-    if (missing.length) {
-      // Make the error visible immediately
-      if (statusPill) statusPill.textContent = "Error: Missing " + missing.join(", ");
-      console.error("Missing elements:", missing);
-      return;
+    function setStatus(t){ statusPill.textContent = t; }
+
+    function formatMonthLabel(yyyyMm){
+      if(!yyyyMm) return "—";
+      const [yy, mm] = String(yyyyMm).split("-");
+      const y = parseInt(yy,10), m = parseInt(mm,10);
+      if(!y || !m) return yyyyMm;
+      return new Date(y, m-1, 1).toLocaleString(undefined, { month:"long", year:"numeric" });
     }
 
-    // State
-    let max = 15;
-    let remaining = 15;
-    let month = "";
-
-    function setStatus(text) {
-      statusPill.textContent = text;
-    }
-
-    function formatMonthLabel(yyyyMm) {
-      if (!yyyyMm) return "—";
-      const parts = String(yyyyMm).split("-");
-      const y = parseInt(parts[0], 10);
-      const m = parseInt(parts[1], 10);
-      if (!y || !m) return yyyyMm;
-      const d = new Date(y, m - 1, 1);
-      return d.toLocaleString(undefined, { month: "long", year: "numeric" });
-    }
-
-    function updateUI() {
+    function updateUI(){
       const used = max - remaining;
-
       countEl.textContent = String(remaining);
       usedEl.textContent = `${used} used`;
       monthEl.textContent = formatMonthLabel(month);
-
       const frac = max ? (remaining / max) : 0;
       progressEl.style.transform = `scaleX(${Math.max(0, Math.min(1, frac))})`;
-
       useBtn.disabled = remaining <= 0;
       undoBtn.disabled = remaining >= max;
     }
 
-    async function sync() {
-      try {
+    async function callApi(action){
+      const u = new URL(API_BASE);
+      u.searchParams.set("token", API_TOKEN);
+      u.searchParams.set("action", action);
+      u.searchParams.set("_ts", String(Date.now())); // cache buster
+
+      const res = await fetch(u.toString(), { method: "GET" });
+      const data = await res.json();
+      return data;
+    }
+
+    async function sync(){
+      try{
         setStatus("Syncing…");
-        const data = await jsonp("get");
-        if (!data || !data.ok) throw new Error((data && data.error) || "Sync failed");
-
-        max = data.max;
-        remaining = data.remaining;
-        month = data.month;
-
+        const data = await callApi("get");
+        if(!data.ok) throw new Error(data.error || "Sync failed");
+        max = data.max; remaining = data.remaining; month = data.month;
         updateUI();
         setStatus("Synced");
-      } catch (err) {
+      }catch(err){
         console.error(err);
-        setStatus("Error: " + (err && err.message ? err.message : String(err)));
+        setStatus("Error: " + (err.message || String(err)));
       }
     }
 
     useBtn.addEventListener("click", async () => {
-      try {
+      try{
         setStatus("Updating…");
-        const data = await jsonp("decrement");
-        if (!data || !data.ok) throw new Error((data && data.error) || "Update failed");
-
-        max = data.max;
-        remaining = data.remaining;
-        month = data.month;
-
+        const data = await callApi("decrement");
+        if(!data.ok) throw new Error(data.error || "Update failed");
+        max = data.max; remaining = data.remaining; month = data.month;
         updateUI();
         setStatus("Synced");
-      } catch (err) {
+      }catch(err){
         console.error(err);
-        setStatus("Error: " + (err && err.message ? err.message : String(err)));
+        setStatus("Error: " + (err.message || String(err)));
       }
     });
 
     undoBtn.addEventListener("click", async () => {
-      try {
+      try{
         setStatus("Updating…");
-        const data = await jsonp("increment");
-        if (!data || !data.ok) throw new Error((data && data.error) || "Update failed");
-
-        max = data.max;
-        remaining = data.remaining;
-        month = data.month;
-
+        const data = await callApi("increment");
+        if(!data.ok) throw new Error(data.error || "Update failed");
+        max = data.max; remaining = data.remaining; month = data.month;
         updateUI();
         setStatus("Synced");
-      } catch (err) {
+      }catch(err){
         console.error(err);
-        setStatus("Error: " + (err && err.message ? err.message : String(err)));
+        setStatus("Error: " + (err.message || String(err)));
       }
     });
 
     resetBtn.addEventListener("click", async () => {
-      try {
+      try{
         setStatus("Updating…");
-        const data = await jsonp("reset");
-        if (!data || !data.ok) throw new Error((data && data.error) || "Update failed");
-
-        max = data.max;
-        remaining = data.remaining;
-        month = data.month;
-
+        const data = await callApi("reset");
+        if(!data.ok) throw new Error(data.error || "Update failed");
+        max = data.max; remaining = data.remaining; month = data.month;
         updateUI();
         setStatus("Synced");
-      } catch (err) {
+      }catch(err){
         console.error(err);
-        setStatus("Error: " + (err && err.message ? err.message : String(err)));
+        setStatus("Error: " + (err.message || String(err)));
       }
     });
 
-    // Start
     sync();
-  });
-</script>
+  </script>
 </body>
 </html>
