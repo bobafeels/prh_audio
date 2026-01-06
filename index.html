@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PRH Audiobook Requests</title>
+  <style>
+    :root{
+      /* Your accents */
+      --accent-1: #745864; /* plum */
+      --accent-2: #8a9588; /* sage */
+      --accent-3: #dcb2b1; /* dusty rose */
+
+      /* Default (light) surface system, tuned to feel Notion-ish */
+      --bg: transparent;
+      --surface: rgba(255,255,255,0.78);
+      --surface-2: rgba(255,255,255,0.55);
+      --border: rgba(15,15,15,0.12);
+      --text: rgba(15,15,15,0.90);
+      --muted: rgba(15,15,15,0.62);
+
+      --shadow: 0 10px 30px rgba(0,0,0,0.08);
+      --radius: 16px;
+    }
+
+    /* Auto dark mode based on OS/browser */
+    @media (prefers-color-scheme: dark) {
+      :root{
+        --surface: rgba(20,20,20,0.70);
+        --surface-2: rgba(20,20,20,0.45);
+        --border: rgba(255,255,255,0.12);
+        --text: rgba(255,255,255,0.92);
+        --muted: rgba(255,255,255,0.62);
+        --shadow: 0 12px 34px rgba(0,0,0,0.35);
+      }
+    }
+
+    /* Manual override via URL: ?theme=light or ?theme=dark */
+    html[data-theme="light"]{
+      --surface: rgba(255,255,255,0.78);
+      --surface-2: rgba(255,255,255,0.55);
+      --border: rgba(15,15,15,0.12);
+      --text: rgba(15,15,15,0.90);
+      --muted: rgba(15,15,15,0.62);
+      --shadow: 0 10px 30px rgba(0,0,0,0.08);
+    }
+    html[data-theme="dark"]{
+      --surface: rgba(20,20,20,0.70);
+      --surface-2: rgba(20,20,20,0.45);
+      --border: rgba(255,255,255,0.12);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.62);
+      --shadow: 0 12px 34px rgba(0,0,0,0.35);
+    }
+
+    * { box-sizing: border-box; }
+
+    body{
+      margin: 0;
+      padding: 12px;
+      background: var(--bg);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--text);
+    }
+
+    .card{
+      width: min(560px, 100%);
+      margin: 0 auto;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, var(--surface), var(--surface-2));
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .topbar{
+      padding: 14px 16px 10px 16px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .title{
+      font-size: 14px;
+      font-weight: 650;
+      letter-spacing: 0.2px;
+    }
+
+    .sub{
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .body{
+      padding: 10px 16px 16px 16px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .meterRow{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .count{
+      font-size: 44px;
+      font-weight: 750;
+      line-height: 1;
+      letter-spacing: -0.5px;
+      background: linear-gradient(90deg, var(--accent-1), var(--accent-3));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      user-select: none;
+    }
+
+    .labelCol{
+      display: grid;
+      gap: 4px;
+      justify-items: end;
+      text-align: right;
+    }
+
+    .label{
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .progressWrap{
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(127,127,127,0.18);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .progress{
+      height: 100%;
+      width: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent-2), var(--accent-3), var(--accent-1));
+      transform-origin: left;
+      transform: scaleX(1);
+      transition: transform 180ms ease;
+    }
+
+    .buttons{
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button{
+      appearance: none;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      background: rgba(127,127,127,0.10);
+      cursor: pointer;
+      transition: transform 80ms ease, background 120ms ease, border-color 120ms ease, opacity 120ms ease;
+    }
+
+    button:hover{ background: rgba(127,127,127,0.14); }
+    button:active{ transform: translateY(1px); }
+
+    .primary{
+      border-color: rgba(220,178,177,0.55);
+      background: linear-gradient(180deg, rgba(220,178,177,0.28), rgba(116,88,100,0.18));
+    }
+
+    .primary:hover{
+      border-color: rgba(220,178,177,0.75);
+      background: linear-gradient(180deg, rgba(220,178,177,0.33), rgba(116,88,100,0.22));
+    }
+
+    button:disabled{
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
+    .footer{
+      padding: 0 16px 14px 16px;
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .pill{
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(127,127,127,0.10);
+    }
+
+    .dot{
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent-2);
+      box-shadow: 0 0 0 3px rgba(138,149,136,0.18);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <div class="topbar">
+      <div class="title">PRH Audiobook Requests</div>
+      <div class="sub" id="monthLabel">—</div>
+    </div>
+
+    <div class="body">
+      <div class="meterRow">
+        <div class="count" id="count">15</div>
+        <div class="labelCol">
+          <div class="label">remaining</div>
+          <div class="label" id="usedLabel">0 used</div>
+        </div>
+      </div>
+
+      <div class="progressWrap" aria-label="Remaining requests progress">
+        <div class="progress" id="progressBar"></div>
+      </div>
+
+      <div class="buttons">
+        <button class="primary" id="useBtn">Request audiobook (-1)</button>
+        <button id="undoBtn">Undo (+1)</button>
+        <button id="resetBtn" title="Resets the counter back to 15 for the current month.">Reset to 15</button>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span class="pill"><span class="dot"></span><span id="resetInfo">Auto-resets on the 1st</span></span>
+      <span class="pill" id="storageInfo">Saved locally</span>
+    </div>
+  </div>
+
+  <script>
+    const MAX_REQUESTS = 15;
+
+    // Theme override: ?theme=dark or ?theme=light
+    const params = new URLSearchParams(window.location.search);
+    const theme = params.get("theme");
+    if (theme === "dark" || theme === "light") {
+      document.documentElement.setAttribute("data-theme", theme);
+    }
+
+    // Month key for auto reset
+    function monthKey(d){
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+    }
+
+    const now = new Date();
+    const keyNow = monthKey(now);
+
+    const STORAGE_MONTH = "prhMonth";
+    const STORAGE_REMAIN = "prhRemaining";
+
+    const savedMonth = localStorage.getItem(STORAGE_MONTH);
+    let remaining = localStorage.getItem(STORAGE_REMAIN);
+
+    // Reset when month changes (or first run)
+    if (savedMonth !== keyNow || remaining === null) {
+      remaining = MAX_REQUESTS;
+      localStorage.setItem(STORAGE_MONTH, keyNow);
+      localStorage.setItem(STORAGE_REMAIN, remaining);
+    } else {
+      remaining = parseInt(remaining, 10);
+      if (Number.isNaN(remaining)) remaining = MAX_REQUESTS;
+    }
+
+    const countEl = document.getElementById("count");
+    const usedEl = document.getElementById("usedLabel");
+    const progressEl = document.getElementById("progressBar");
+    const monthEl = document.getElementById("monthLabel");
+
+    const useBtn = document.getElementById("useBtn");
+    const undoBtn = document.getElementById("undoBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    function formatMonthLabel(d){
+      return d.toLocaleString(undefined, { month: "long", year: "numeric" });
+    }
+
+    function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
+
+    function save(){
+      localStorage.setItem(STORAGE_MONTH, keyNow);
+      localStorage.setItem(STORAGE_REMAIN, remaining);
+    }
+
+    function updateUI(){
+      remaining = clamp(remaining, 0, MAX_REQUESTS);
+      const used = MAX_REQUESTS - remaining;
+
+      countEl.textContent = remaining;
+      usedEl.textContent = `${used} used`;
+      monthEl.textContent = formatMonthLabel(now);
+
+      const frac = remaining / MAX_REQUESTS; // 1 to 0
+      progressEl.style.transform = `scaleX(${frac})`;
+
+      useBtn.disabled = remaining <= 0;
+      undoBtn.disabled = remaining >= MAX_REQUESTS;
+    }
+
+    useBtn.addEventListener("click", () => {
+      if (remaining > 0){
+        remaining -= 1;
+        save();
+        updateUI();
+      }
+    });
+
+    undoBtn.addEventListener("click", () => {
+      if (remaining < MAX_REQUESTS){
+        remaining += 1;
+        save();
+        updateUI();
+      }
+    });
+
+    resetBtn.addEventListener("click", () => {
+      remaining = MAX_REQUESTS;
+      save();
+      updateUI();
+    });
+
+    updateUI();
+  </script>
+</body>
+</html>
