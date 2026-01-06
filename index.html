@@ -186,62 +186,18 @@
     </div>
   </div>
 
-  <script>
-  // ====== CONFIG ======
+<script>
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwipOt5teznnV4IHnir-FsO5hC9Pkh2J1IF0Wvu2_tijxfzFvKEaKOy8nI3_Fh75Q2HVg/exec";
   const API_TOKEN = "prh_9f2c4a7b_2026".trim();
-  // ====================
 
-  // Theme override: ?theme=dark or ?theme=light (optional)
-  const params = new URLSearchParams(window.location.search);
-  const theme = params.get("theme");
-  if (theme === "dark" || theme === "light") {
-    document.documentElement.setAttribute("data-theme", theme);
-  }
-
-  // DOM refs
-  const countEl = document.getElementById("count");
-  const usedEl = document.getElementById("usedLabel");
-  const progressEl = document.getElementById("progressBar");
-  const monthEl = document.getElementById("monthLabel");
-  const statusPill = document.getElementById("statusPill");
-
-  const useBtn = document.getElementById("useBtn");
-  const undoBtn = document.getElementById("undoBtn");
-  const resetBtn = document.getElementById("resetBtn");
-
-  // State
-  let max = 15;
-  let remaining = 15;
-  let month = "";
-
-  function setStatus(text) {
-    statusPill.textContent = text;
-  }
-
-  function formatMonthLabel(yyyyMm) {
-    if (!yyyyMm) return "—";
-    const parts = String(yyyyMm).split("-");
-    const y = parseInt(parts[0], 10);
-    const m = parseInt(parts[1], 10);
-    if (!y || !m) return yyyyMm;
-    const d = new Date(y, m - 1, 1);
-    return d.toLocaleString(undefined, { month: "long", year: "numeric" });
-  }
-
-  function updateUI() {
-    const used = max - remaining;
-
-    countEl.textContent = String(remaining);
-    usedEl.textContent = `${used} used`;
-    monthEl.textContent = formatMonthLabel(month);
-
-    const frac = max ? (remaining / max) : 0;
-    progressEl.style.transform = `scaleX(${Math.max(0, Math.min(1, frac))})`;
-
-    useBtn.disabled = remaining <= 0;
-    undoBtn.disabled = remaining >= max;
-  }
+  // Optional theme override: ?theme=dark or ?theme=light
+  (function themeOverride() {
+    const params = new URLSearchParams(window.location.search);
+    const theme = params.get("theme");
+    if (theme === "dark" || theme === "light") {
+      document.documentElement.setAttribute("data-theme", theme);
+    }
+  })();
 
   function jsonp(action, timeoutMs = 8000) {
     return new Promise((resolve, reject) => {
@@ -279,7 +235,6 @@
       script = document.createElement("script");
       script.src = url.toString();
       script.async = true;
-
       script.onerror = () => {
         if (done) return;
         done = true;
@@ -292,79 +247,142 @@
     });
   }
 
-  async function sync() {
-    try {
-      setStatus("Syncing…");
-      const data = await jsonp("get");
-      if (!data || !data.ok) throw new Error((data && data.error) || "Sync failed");
+  document.addEventListener("DOMContentLoaded", () => {
+    // DOM refs
+    const countEl = document.getElementById("count");
+    const usedEl = document.getElementById("usedLabel");
+    const progressEl = document.getElementById("progressBar");
+    const monthEl = document.getElementById("monthLabel");
+    const statusPill = document.getElementById("statusPill");
 
-      max = data.max;
-      remaining = data.remaining;
-      month = data.month;
+    const useBtn = document.getElementById("useBtn");
+    const undoBtn = document.getElementById("undoBtn");
+    const resetBtn = document.getElementById("resetBtn");
 
-      updateUI();
-      setStatus("Synced");
-    } catch (err) {
-      console.error(err);
-      setStatus("Error");
+    // Validate markup
+    const missing = [];
+    if (!countEl) missing.push("count");
+    if (!usedEl) missing.push("usedLabel");
+    if (!progressEl) missing.push("progressBar");
+    if (!monthEl) missing.push("monthLabel");
+    if (!statusPill) missing.push("statusPill");
+    if (!useBtn) missing.push("useBtn");
+    if (!undoBtn) missing.push("undoBtn");
+    if (!resetBtn) missing.push("resetBtn");
+
+    if (missing.length) {
+      // Make the error visible immediately
+      if (statusPill) statusPill.textContent = "Error: Missing " + missing.join(", ");
+      console.error("Missing elements:", missing);
+      return;
     }
-  }
 
-  useBtn.addEventListener("click", async () => {
-    try {
-      setStatus("Updating…");
-      const data = await jsonp("decrement");
-      if (!data || !data.ok) throw new Error((data && data.error) || "Update failed");
+    // State
+    let max = 15;
+    let remaining = 15;
+    let month = "";
 
-      max = data.max;
-      remaining = data.remaining;
-      month = data.month;
-
-      updateUI();
-      setStatus("Synced");
-    } catch (err) {
-      console.error(err);
-      setStatus("Error");
+    function setStatus(text) {
+      statusPill.textContent = text;
     }
-  });
 
-  undoBtn.addEventListener("click", async () => {
-    try {
-      setStatus("Updating…");
-      const data = await jsonp("increment");
-      if (!data || !data.ok) throw new Error((data && data.error) || "Update failed");
-
-      max = data.max;
-      remaining = data.remaining;
-      month = data.month;
-
-      updateUI();
-      setStatus("Synced");
-    } catch (err) {
-      console.error(err);
-      setStatus("Error");
+    function formatMonthLabel(yyyyMm) {
+      if (!yyyyMm) return "—";
+      const parts = String(yyyyMm).split("-");
+      const y = parseInt(parts[0], 10);
+      const m = parseInt(parts[1], 10);
+      if (!y || !m) return yyyyMm;
+      const d = new Date(y, m - 1, 1);
+      return d.toLocaleString(undefined, { month: "long", year: "numeric" });
     }
-  });
 
-  resetBtn.addEventListener("click", async () => {
-    try {
-      setStatus("Updating…");
-      const data = await jsonp("reset");
-      if (!data || !data.ok) throw new Error((data && data.error) || "Update failed");
+    function updateUI() {
+      const used = max - remaining;
 
-      max = data.max;
-      remaining = data.remaining;
-      month = data.month;
+      countEl.textContent = String(remaining);
+      usedEl.textContent = `${used} used`;
+      monthEl.textContent = formatMonthLabel(month);
 
-      updateUI();
-      setStatus("Synced");
-    } catch (err) {
-      console.error(err);
-      setStatus("Error");
+      const frac = max ? (remaining / max) : 0;
+      progressEl.style.transform = `scaleX(${Math.max(0, Math.min(1, frac))})`;
+
+      useBtn.disabled = remaining <= 0;
+      undoBtn.disabled = remaining >= max;
     }
-  });
 
-  window.addEventListener("load", () => {
+    async function sync() {
+      try {
+        setStatus("Syncing…");
+        const data = await jsonp("get");
+        if (!data || !data.ok) throw new Error((data && data.error) || "Sync failed");
+
+        max = data.max;
+        remaining = data.remaining;
+        month = data.month;
+
+        updateUI();
+        setStatus("Synced");
+      } catch (err) {
+        console.error(err);
+        setStatus("Error: " + (err && err.message ? err.message : String(err)));
+      }
+    }
+
+    useBtn.addEventListener("click", async () => {
+      try {
+        setStatus("Updating…");
+        const data = await jsonp("decrement");
+        if (!data || !data.ok) throw new Error((data && data.error) || "Update failed");
+
+        max = data.max;
+        remaining = data.remaining;
+        month = data.month;
+
+        updateUI();
+        setStatus("Synced");
+      } catch (err) {
+        console.error(err);
+        setStatus("Error: " + (err && err.message ? err.message : String(err)));
+      }
+    });
+
+    undoBtn.addEventListener("click", async () => {
+      try {
+        setStatus("Updating…");
+        const data = await jsonp("increment");
+        if (!data || !data.ok) throw new Error((data && data.error) || "Update failed");
+
+        max = data.max;
+        remaining = data.remaining;
+        month = data.month;
+
+        updateUI();
+        setStatus("Synced");
+      } catch (err) {
+        console.error(err);
+        setStatus("Error: " + (err && err.message ? err.message : String(err)));
+      }
+    });
+
+    resetBtn.addEventListener("click", async () => {
+      try {
+        setStatus("Updating…");
+        const data = await jsonp("reset");
+        if (!data || !data.ok) throw new Error((data && data.error) || "Update failed");
+
+        max = data.max;
+        remaining = data.remaining;
+        month = data.month;
+
+        updateUI();
+        setStatus("Synced");
+      } catch (err) {
+        console.error(err);
+        setStatus("Error: " + (err && err.message ? err.message : String(err)));
+      }
+    });
+
+    // Start
     sync();
   });
 </script>
