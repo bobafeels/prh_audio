@@ -190,27 +190,50 @@
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwipOt5teznnV4IHnir-FsO5hC9Pkh2J1IF0Wvu2_tijxfzFvKEaKOy8nI3_Fh75Q2HVg/exec";
 const API_TOKEN = "prh_9f2c4a7b_2026".trim();
 
-function jsonp(action) {
+function jsonp(action, timeoutMs = 8000) {
   return new Promise((resolve, reject) => {
     const cbName = `cb_${Date.now()}_${Math.floor(Math.random() * 1e6)}`;
+
     const url = new URL(WEB_APP_URL);
     url.searchParams.set("token", (API_TOKEN || "").trim());
-    url.searchParams.set("_ts", String(Date.now())); // cache buster
     url.searchParams.set("action", action);
     url.searchParams.set("callback", cbName);
+    url.searchParams.set("_ts", Date.now()); // cache buster
+
+    let done = false;
+
+    function cleanup() {
+      try { delete window[cbName]; } catch {}
+      if (script && script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+    }
+
+    const timer = setTimeout(() => {
+      if (done) return;
+      done = true;
+      cleanup();
+      reject(new Error("JSONP timeout"));
+    }, timeoutMs);
 
     window[cbName] = (data) => {
-      delete window[cbName];
-      script.remove();
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      cleanup();
       resolve(data);
     };
 
     const script = document.createElement("script");
     script.src = url.toString();
+    script.async = true;
+
     script.onerror = () => {
-      delete window[cbName];
-      script.remove();
-      reject(new Error("Network/JSONP error"));
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      cleanup();
+      reject(new Error("JSONP load error"));
     };
 
     document.body.appendChild(script);
@@ -218,31 +241,36 @@ function jsonp(action) {
 }
 
 // Then update your handlers to use jsonp():
-async function sync(){
-  try{
+async function sync() {
+  try {
     setStatus("Syncing…");
     const data = await jsonp("get");
-    if (!data.ok) throw new Error(data.error || "Sync failed");
-    max = data.max; remaining = data.remaining; month = data.month;
+    if (!data.ok) throw new Error(data.error);
+
+    max = data.max;
+    remaining = data.remaining;
+    month = data.month;
+
     updateUI();
     setStatus("Synced");
-  } catch (err){
-    setStatus("Error");
+  } catch (err) {
     console.error(err);
+    setStatus("Error");
   }
 }
 
 useBtn.addEventListener("click", async () => {
-  try{
+  try {
     setStatus("Updating…");
     const data = await jsonp("decrement");
-    if (!data.ok) throw new Error(data.error || "Update failed");
-    max = data.max; remaining = data.remaining; month = data.month;
+    if (!data.ok) throw new Error(data.error);
+
+    remaining = data.remaining;
     updateUI();
     setStatus("Synced");
-  } catch (err){
-    setStatus("Error");
+  } catch (err) {
     console.error(err);
+    setStatus("Error");
   }
 });
 
@@ -272,6 +300,9 @@ resetBtn.addEventListener("click", async () => {
     setStatus("Error");
     console.error(err);
   }
+});
+  window.addEventListener("load", () => {
+  sync();
 });
   </script>
 </body>
