@@ -187,130 +187,91 @@
   </div>
 
   <script>
-    // ====== CONFIG: paste your Apps Script web app URL + token ======
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzhM5SLOs_B9l3JDpsrNeRbCLZXkRnYcgDanbLl2zIz_2KMLHUP9SgHbF7IzqCcCuO7zw/exec";
-    const API_TOKEN   = "prh_9f2c4a7b_2026";
-    // ===============================================================
+const API_TOKEN   = "prh_9f2c4a7b_2026";
 
-    // Optional theme override: ?theme=dark or ?theme=light
-    const params = new URLSearchParams(window.location.search);
-    const theme = params.get("theme");
-    if (theme === "dark" || theme === "light") {
-      document.documentElement.setAttribute("data-theme", theme);
-    }
+function jsonp(action) {
+  return new Promise((resolve, reject) => {
+    const cbName = `cb_${Date.now()}_${Math.floor(Math.random() * 1e6)}`;
+    const url = new URL(WEB_APP_URL);
+    url.searchParams.set("token", API_TOKEN);
+    url.searchParams.set("action", action);
+    url.searchParams.set("callback", cbName);
 
-    const countEl = document.getElementById("count");
-    const usedEl = document.getElementById("usedLabel");
-    const progressEl = document.getElementById("progressBar");
-    const monthEl = document.getElementById("monthLabel");
-    const statusPill = document.getElementById("statusPill");
+    window[cbName] = (data) => {
+      delete window[cbName];
+      script.remove();
+      resolve(data);
+    };
 
-    const useBtn = document.getElementById("useBtn");
-    const undoBtn = document.getElementById("undoBtn");
-    const resetBtn = document.getElementById("resetBtn");
+    const script = document.createElement("script");
+    script.src = url.toString();
+    script.onerror = () => {
+      delete window[cbName];
+      script.remove();
+      reject(new Error("Network/JSONP error"));
+    };
 
-    let max = 15;
-    let remaining = 15;
-    let month = "";
+    document.body.appendChild(script);
+  });
+}
 
-    function formatMonthLabel(yyyyMm){
-      const [y, m] = yyyyMm.split("-").map(Number);
-      const d = new Date(y, m - 1, 1);
-      return d.toLocaleString(undefined, { month: "long", year: "numeric" });
-    }
+// Then update your handlers to use jsonp():
+async function sync(){
+  try{
+    setStatus("Syncing…");
+    const data = await jsonp("get");
+    if (!data.ok) throw new Error(data.error || "Sync failed");
+    max = data.max; remaining = data.remaining; month = data.month;
+    updateUI();
+    setStatus("Synced");
+  } catch (err){
+    setStatus("Error");
+    console.error(err);
+  }
+}
 
-    function setStatus(text){ statusPill.textContent = text; }
+useBtn.addEventListener("click", async () => {
+  try{
+    setStatus("Updating…");
+    const data = await jsonp("decrement");
+    if (!data.ok) throw new Error(data.error || "Update failed");
+    max = data.max; remaining = data.remaining; month = data.month;
+    updateUI();
+    setStatus("Synced");
+  } catch (err){
+    setStatus("Error");
+    console.error(err);
+  }
+});
 
-    function updateUI(){
-      const used = max - remaining;
-      countEl.textContent = remaining;
-      usedEl.textContent = `${used} used`;
-      monthEl.textContent = month ? formatMonthLabel(month) : "—";
+undoBtn.addEventListener("click", async () => {
+  try{
+    setStatus("Updating…");
+    const data = await jsonp("increment");
+    if (!data.ok) throw new Error(data.error || "Update failed");
+    max = data.max; remaining = data.remaining; month = data.month;
+    updateUI();
+    setStatus("Synced");
+  } catch (err){
+    setStatus("Error");
+    console.error(err);
+  }
+});
 
-      const frac = max ? (remaining / max) : 0;
-      progressEl.style.transform = `scaleX(${Math.max(0, Math.min(1, frac))})`;
-
-      useBtn.disabled = remaining <= 0;
-      undoBtn.disabled = remaining >= max;
-    }
-
-    async function apiGet(){
-      const url = `${WEB_APP_URL}?token=${encodeURIComponent(API_TOKEN)}`;
-      const res = await fetch(url, { method: "GET" });
-      return res.json();
-    }
-
-    async function apiPost(action){
-      const res = await fetch(WEB_APP_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token: API_TOKEN, action })
-      });
-      return res.json();
-    }
-
-    async function sync(){
-      try{
-        setStatus("Syncing…");
-        const data = await apiGet();
-        if (!data.ok) throw new Error(data.error || "Sync failed");
-
-        max = data.max;
-        remaining = data.remaining;
-        month = data.month;
-
-        updateUI();
-        setStatus("Synced");
-      } catch (err){
-        setStatus("Offline / error");
-        console.error(err);
-      }
-    }
-
-    useBtn.addEventListener("click", async () => {
-      try{
-        setStatus("Updating…");
-        const data = await apiPost("decrement");
-        if (!data.ok) throw new Error(data.error || "Update failed");
-        max = data.max; remaining = data.remaining; month = data.month;
-        updateUI();
-        setStatus("Synced");
-      } catch (err){
-        setStatus("Error");
-        console.error(err);
-      }
-    });
-
-    undoBtn.addEventListener("click", async () => {
-      try{
-        setStatus("Updating…");
-        const data = await apiPost("increment");
-        if (!data.ok) throw new Error(data.error || "Update failed");
-        max = data.max; remaining = data.remaining; month = data.month;
-        updateUI();
-        setStatus("Synced");
-      } catch (err){
-        setStatus("Error");
-        console.error(err);
-      }
-    });
-
-    resetBtn.addEventListener("click", async () => {
-      try{
-        setStatus("Updating…");
-        const data = await apiPost("reset");
-        if (!data.ok) throw new Error(data.error || "Update failed");
-        max = data.max; remaining = data.remaining; month = data.month;
-        updateUI();
-        setStatus("Synced");
-      } catch (err){
-        setStatus("Error");
-        console.error(err);
-      }
-    });
-
-    // initial load
-    sync();
+resetBtn.addEventListener("click", async () => {
+  try{
+    setStatus("Updating…");
+    const data = await jsonp("reset");
+    if (!data.ok) throw new Error(data.error || "Update failed");
+    max = data.max; remaining = data.remaining; month = data.month;
+    updateUI();
+    setStatus("Synced");
+  } catch (err){
+    setStatus("Error");
+    console.error(err);
+  }
+});
   </script>
 </body>
 </html>
