@@ -188,13 +188,14 @@
 
   <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwipOt5teznnV4IHnir-FsO5hC9Pkh2J1IF0Wvu2_tijxfzFvKEaKOy8nI3_Fh75Q2HVg/exec";
-const API_TOKEN   = "prh_9f2c4a7b_2026";
+const API_TOKEN = "prh_9f2c4a7b_2026".trim();
 
 function jsonp(action) {
   return new Promise((resolve, reject) => {
     const cbName = `cb_${Date.now()}_${Math.floor(Math.random() * 1e6)}`;
     const url = new URL(WEB_APP_URL);
-    url.searchParams.set("token", API_TOKEN);
+    url.searchParams.set("token", (API_TOKEN || "").trim());
+    url.searchParams.set("_ts", String(Date.now())); // cache buster
     url.searchParams.set("action", action);
     url.searchParams.set("callback", cbName);
 
